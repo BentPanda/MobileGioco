@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -17,21 +17,18 @@ public class EnemySpawner : MonoBehaviour
     private bool hardEnemyPurchased;
     private bool bulletEnemyPurchased;
 
-    void Start()
+    private void Start()
     {
-        // za³aduj kupionych wrogów i jak s¹ kupieni to ich spawnuje
+        // Wczytujemy, które typy wrogów s¹ odblokowane
         hardEnemyPurchased = PlayerPrefs.GetInt("HardEnemyPurchased", 0) == 1;
         bulletEnemyPurchased = PlayerPrefs.GetInt("BulletEnemyPurchased", 0) == 1;
 
-        // znajdŸ gracza po tagu
         GameObject playerObject = GameObject.FindWithTag("Player");
         if (playerObject != null)
-        {
             playerTransform = playerObject.transform;
-        }
     }
 
-    void Update()
+    private void Update()
     {
         if (playerTransform == null) return;
 
@@ -40,43 +37,32 @@ public class EnemySpawner : MonoBehaviour
         {
             SpawnEnemy();
             spawnTimer = spawnRate;
-            spawnRate -= spawnIncreaseRate;
-            spawnRate = Mathf.Clamp(spawnRate, 0.5f, float.MaxValue);
+            spawnRate = Mathf.Max(0.5f, spawnRate - spawnIncreaseRate);
         }
     }
 
-    void SpawnEnemy()
+    private void SpawnEnemy()
     {
         Vector2 spawnPosition = GetEdgeSpawnPosition();
         GameObject enemyToSpawn = SelectEnemyToSpawn();
         Instantiate(enemyToSpawn, spawnPosition, Quaternion.identity);
     }
 
-    Vector2 GetEdgeSpawnPosition()
+    private Vector2 GetEdgeSpawnPosition()
     {
-        float angle = Random.Range(0, 2 * Mathf.PI);
+        float angle = Random.Range(0f, 2 * Mathf.PI);
         float distance = Random.Range(spawnDistanceMin, spawnDistanceMax);
-
-        Vector2 spawnPosition = new Vector2(
-            playerTransform.position.x + Mathf.Cos(angle) * distance,
-            playerTransform.position.y + Mathf.Sin(angle) * distance
-        );
-
-        return spawnPosition;
+        return playerTransform.position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
     }
 
-    GameObject SelectEnemyToSpawn()
+    private GameObject SelectEnemyToSpawn()
     {
         List<GameObject> availableEnemies = new List<GameObject> { normalEnemyPrefab };
 
         if (hardEnemyPurchased)
-        {
             availableEnemies.Add(hardEnemyPrefab);
-        }
         if (bulletEnemyPurchased)
-        {
             availableEnemies.Add(bulletEnemyPrefab);
-        }
 
         int index = Random.Range(0, availableEnemies.Count);
         return availableEnemies[index];

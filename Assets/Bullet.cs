@@ -5,81 +5,47 @@ public class Bullet : MonoBehaviour
     public float bulletSpeed = 20f;
     public Rigidbody2D rb;
     public GameObject explosionEffectPrefab;
-
     public bool isEnemyBullet = false;
+    public interface IDamageable
+{
+    void TakeDamage(int damage);
+}
 
-    void Start()
+
+    private void Awake()
     {
         if (rb == null)
-        {
             rb = GetComponent<Rigidbody2D>();
-        }
+    }
 
+    private void Start()
+    {
         rb.linearVelocity = transform.up * bulletSpeed;
-
         Destroy(gameObject, 2f);
     }
 
-    void OnTriggerEnter2D(Collider2D hitInfo)
+    private void OnTriggerEnter2D(Collider2D hitInfo)
     {
+        // Dzia³amy tylko, gdy trafiamy w obiekt oznaczony jako "Enemy"
+        if (!hitInfo.CompareTag("Enemy"))
+            return;
+
+        // U¿ywamy interfejsu, aby usun¹æ koniecznoœæ sprawdzania ka¿dego typu wroga osobno
+        IDamageable damageable = hitInfo.GetComponent<IDamageable>();
+        if (damageable != null)
+            damageable.TakeDamage(1);
+
         if (isEnemyBullet)
         {
-            // logika pocisku
-            if (hitInfo.CompareTag("Enemy"))
-            {
-                EnemyController enemy = hitInfo.GetComponent<EnemyController>();
-                HardEnemyController hardEnemy = hitInfo.GetComponent<HardEnemyController>();
-                BulletEnemyController bulletEnemy = hitInfo.GetComponent<BulletEnemyController>();
-
-                if (enemy != null)
-                {
-                    enemy.TakeDamage(1);
-                }
-                else if (hardEnemy != null)
-                {
-                    hardEnemy.TakeDamage(1);
-                }
-                else if (bulletEnemy != null)
-                {
-                    bulletEnemy.TakeDamage(1);
-                }
-
-                if (explosionEffectPrefab != null)
-                {
-                    Instantiate(explosionEffectPrefab, transform.position, transform.rotation);
-                }
-
-                Destroy(gameObject);
-            }
+            if (explosionEffectPrefab != null)
+                Instantiate(explosionEffectPrefab, transform.position, transform.rotation);
         }
         else
         {
-            // zadawanie obra¿en wrogom
-            if (hitInfo.CompareTag("Enemy"))
-            {
-                EnemyController enemy = hitInfo.GetComponent<EnemyController>();
-                HardEnemyController hardEnemy = hitInfo.GetComponent<HardEnemyController>();
-                BulletEnemyController bulletEnemy = hitInfo.GetComponent<BulletEnemyController>();
-
-                if (enemy != null)
-                {
-                    enemy.TakeDamage(1);
-                }
-                else if (hardEnemy != null)
-                {
-                    hardEnemy.TakeDamage(1);
-                }
-                else if (bulletEnemy != null)
-                {
-                    bulletEnemy.TakeDamage(1);
-                }
-
-                // shake camery
-                CameraShake cameraShake = Camera.main.GetComponent<CameraShake>();
-                cameraShake?.StartShake(0.2f);
-
-                Destroy(gameObject);
-            }
+            CameraShake cameraShake = Camera.main.GetComponent<CameraShake>();
+            cameraShake?.StartShake(0.2f);
         }
+
+        Destroy(gameObject);
     }
 }

@@ -9,7 +9,7 @@ public class HealthDisplay : MonoBehaviour
     public GameObject heartPrefab;
     public Transform heartContainer;
 
-    private List<GameObject> hearts = new List<GameObject>();
+    private readonly List<GameObject> hearts = new List<GameObject>();
 
     public void SetupHearts(int maxHP)
     {
@@ -19,19 +19,12 @@ public class HealthDisplay : MonoBehaviour
             return;
         }
 
-        // Clear any existing hearts
         foreach (GameObject heart in hearts)
-        {
             Destroy(heart);
-        }
         hearts.Clear();
 
-        // Instantiate heart icons for each HP point
         for (int i = 0; i < maxHP; i++)
-        {
-            GameObject heart = Instantiate(heartPrefab, heartContainer);
-            hearts.Add(heart);
-        }
+            hearts.Add(Instantiate(heartPrefab, heartContainer));
     }
 
     public void UpdateHearts(int currentHP)

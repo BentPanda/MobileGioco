@@ -1,6 +1,7 @@
 using UnityEngine;
+using static Bullet;
 
-public class BulletEnemyController : MonoBehaviour
+public class BulletEnemyController : MonoBehaviour, IDamageable
 {
     public float speed = 2f;
     private Transform player;
@@ -14,21 +15,20 @@ public class BulletEnemyController : MonoBehaviour
 
     public GameObject bulletPrefab;
     public int numberOfBullets = 16;
-    public float bulletSpeed = 5f; // Bullet speed for enemy bullets
+    public float bulletSpeed = 5f;
 
-    void Start()
+    private void Start()
     {
         player = GameObject.FindWithTag("Player")?.transform;
     }
 
-    void Update()
+    private void Update()
     {
         if (player == null) return;
 
         Vector2 direction = (player.position - transform.position).normalized;
         float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg - 90f;
         transform.rotation = Quaternion.Euler(0, 0, angle);
-
         transform.position = Vector2.MoveTowards(transform.position, player.position, speed * Time.deltaTime);
     }
 
@@ -36,14 +36,11 @@ public class BulletEnemyController : MonoBehaviour
     {
         health -= damageAmount;
         if (health <= 0)
-        {
             Die();
-        }
     }
 
-    void Die()
+    private void Die()
     {
-        // Add score
         GameManager gameManager = FindObjectOfType<GameManager>();
         if (gameManager != null)
         {
@@ -51,12 +48,11 @@ public class BulletEnemyController : MonoBehaviour
             gameManager.IncreaseCombo();
             gameManager.killCount++;
         }
-
         Explode();
         Destroy(gameObject);
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
@@ -64,58 +60,41 @@ public class BulletEnemyController : MonoBehaviour
             if (playerComponent != null)
             {
                 playerComponent.TakeDamage(damage);
-
                 CameraShake cameraShake = Camera.main.GetComponent<CameraShake>();
                 cameraShake?.StartShake(0.3f);
             }
-
-            // Enemy dies on collision, but do not add score
             Explode();
             Destroy(gameObject);
         }
     }
 
-    void Explode()
+    private void Explode()
     {
         if (explosionEffectPrefab != null)
-        {
             Instantiate(explosionEffectPrefab, transform.position, transform.rotation);
-        }
 
-        // Spawn bullets in all directions
         SpawnBullets();
 
         if (deathSound != null)
-        {
             AudioSource.PlayClipAtPoint(deathSound, transform.position, deathSoundVolume);
-        }
     }
 
-    void SpawnBullets()
+    private void SpawnBullets()
     {
         float angleStep = 360f / numberOfBullets;
-        float angle = 0f;
-
         for (int i = 0; i < numberOfBullets; i++)
         {
-            // Calculate the rotation for this bullet
-            Quaternion bulletRotation = Quaternion.Euler(0f, 0f, angle);
-
-            // Instantiate the bullet with this rotation
+            Quaternion bulletRotation = Quaternion.Euler(0f, 0f, i * angleStep);
             GameObject bullet = Instantiate(bulletPrefab, transform.position, bulletRotation);
 
-            // Set the bullet's isEnemyBullet flag
             Bullet bulletScript = bullet.GetComponent<Bullet>();
             if (bulletScript != null)
             {
                 bulletScript.isEnemyBullet = true;
-                bulletScript.bulletSpeed = bulletSpeed; // Set bullet speed
+                bulletScript.bulletSpeed = bulletSpeed;
             }
 
             bullet.layer = LayerMask.NameToLayer("EnemyBullet");
-
-            // Increment angle for the next bullet
-            angle += angleStep;
         }
     }
 }

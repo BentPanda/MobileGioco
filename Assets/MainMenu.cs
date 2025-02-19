@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class MainMenu : MonoBehaviour
 {
@@ -24,12 +24,11 @@ public class MainMenu : MonoBehaviour
     [Header("Color Customization")]
     public List<ColorOption> colorOptions;
 
-    private Color activeTextColor = new Color(1, 1, 1, 1);      // Pe³ny color jak jest wybrane
-    private Color inactiveTextColor = new Color(1, 1, 1, 0.5f); // Niepe³ny jak nie jest wybrane
-
+    private Color activeTextColor = new Color(1, 1, 1, 1);
+    private Color inactiveTextColor = new Color(1, 1, 1, 0.5f);
     private int totalScore;
 
-    void Start()
+    private void Start()
     {
         mainMenuCanvas.SetActive(true);
         settingsCanvas.SetActive(false);
@@ -40,9 +39,7 @@ public class MainMenu : MonoBehaviour
         LoadTotalScore();
         LoadColorOptions();
         SetupColorOptionEventListeners();
-
         ResetBoxSpriteAlphas();
-
         UpdateGraphicsButtons();
         UpdateColorSelection();
     }
@@ -62,55 +59,39 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    // Zmiana kolorów z customize Canvas
     private void UpdateColorSelection()
     {
         string selectedColorName = LoadPlayerColor();
 
         foreach (ColorOption option in colorOptions)
         {
-            // Sprawdzanie czy kolor jest odblokowany
             if (option.isUnlocked)
             {
                 option.lockOverlay.SetActive(false);
                 option.costText.gameObject.SetActive(false);
-                option.colorButton.interactable = true;
             }
             else
             {
                 option.lockOverlay.SetActive(true);
                 option.costText.gameObject.SetActive(true);
                 option.costText.text = option.cost.ToString();
-                option.colorButton.interactable = true;
             }
 
-            // zmienny wygl¹d zale¿ny od tego czy kolor jest odblokowany
-            if (option.isUnlocked && selectedColorName == option.colorName)
-            {
-                SetColorOptionAppearance(option, true);
-            }
-            else
-            {
-                SetColorOptionAppearance(option, false);
-            }
+            bool isSelected = option.isUnlocked && (selectedColorName == option.colorName);
+            SetColorOptionAppearance(option, isSelected);
         }
 
         if (totalScoreText != null)
-        {
             totalScoreText.text = "Score: " + totalScore;
-        }
     }
 
     private void SetColorOptionAppearance(ColorOption option, bool isSelected)
     {
-        // ustawienie koloru tektsu
         option.colorText.color = isSelected ? activeTextColor : inactiveTextColor;
 
-        // Zmiana alfy
         if (option.box != null)
         {
-            float alpha = isSelected ? 1f : 0.5f; // alfa 1 jesli wybrane, 0.5 jesli niewybrane
-
+            float alpha = isSelected ? 1f : 0.5f;
             foreach (SpriteRenderer sprite in option.box.GetComponentsInChildren<SpriteRenderer>())
             {
                 Color spriteColor = sprite.color;
@@ -128,7 +109,6 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            // Próba kupienia koloru
             PurchaseColor(option);
         }
     }
@@ -137,19 +117,15 @@ public class MainMenu : MonoBehaviour
     {
         if (totalScore >= option.cost)
         {
-            // odj¹æ cene
             totalScore -= option.cost;
             PlayerPrefs.SetInt("TotalScore", totalScore);
             PlayerPrefs.Save();
 
-            // odblokowanie koloru
             option.isUnlocked = true;
             PlayerPrefs.SetInt(option.colorName + "_Unlocked", 1);
             PlayerPrefs.Save();
 
             SavePlayerColor(option.colorName);
-
-            // aktualizuj Ui
             UpdateColorSelection();
 
             Debug.Log(option.colorName + " color unlocked!");
@@ -157,7 +133,6 @@ public class MainMenu : MonoBehaviour
         else
         {
             Debug.Log("Not enough score to purchase " + option.colorName + " color.");
-            // Tutaj moge zamiast tego daæ wiadomoœæ w samej grze jak coœ, ale nie mam ochoty bo po co :D
         }
     }
 
@@ -169,9 +144,7 @@ public class MainMenu : MonoBehaviour
     private void LoadColorOptions()
     {
         foreach (ColorOption option in colorOptions)
-        {
             option.isUnlocked = PlayerPrefs.GetInt(option.colorName + "_Unlocked", 0) == 1;
-        }
     }
 
     private void SetupColorOptionEventListeners()
@@ -179,10 +152,7 @@ public class MainMenu : MonoBehaviour
         foreach (ColorOption option in colorOptions)
         {
             option.colorButton.onClick.RemoveAllListeners();
-
-            ColorOption currentOption = option;
-
-            option.colorButton.onClick.AddListener(() => OnColorOptionClicked(currentOption));
+            option.colorButton.onClick.AddListener(() => OnColorOptionClicked(option));
         }
     }
 
@@ -196,7 +166,6 @@ public class MainMenu : MonoBehaviour
     {
         return PlayerPrefs.GetString("SelectedColor", "");
     }
-
 
     public void PlayGame()
     {
@@ -282,16 +251,12 @@ public class MainMenu : MonoBehaviour
     private void LoadGraphicsSettings()
     {
         int graphicsQuality = PlayerPrefs.GetInt("GraphicsQuality", 1);
-
         if (postProcessingVolume != null)
-        {
             postProcessingVolume.enabled = graphicsQuality == 1;
-        }
     }
 
     public void ExitGame()
     {
-        // zamykanie gry
         Application.Quit();
 
 #if UNITY_ANDROID
@@ -301,16 +266,11 @@ public class MainMenu : MonoBehaviour
 #endif
     }
 
-    // usuniêcie danych
     public void ResetPlayerData()
     {
-        // usuniêcie danych z playerPrefs
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-
-        // za³adowanie ponownie sceny by zmiany siê pokaza³y
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
         Debug.Log("Player data has been reset.");
     }
 }
@@ -322,10 +282,9 @@ public class ColorOption
     public Color colorValue;
     public int cost;
     public bool isUnlocked;
-
     public Button colorButton;
     public TextMeshProUGUI colorText;
-    public GameObject lockOverlay; // zdjêcie które pokazuje ¿e color jest zablokowany (nie kupiony)
+    public GameObject lockOverlay;
     public TextMeshProUGUI costText;
     public GameObject box;
 }

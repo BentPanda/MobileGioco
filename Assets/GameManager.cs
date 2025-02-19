@@ -1,8 +1,9 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
-using System.Collections;
 using UnityEngine.Rendering;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,27 +23,24 @@ public class GameManager : MonoBehaviour
     public int maxCombo = 2;
     public int killCount = 0;
 
-    public EnemySpawner enemySpawner; //referencja do emeny spawner
-
+    public EnemySpawner enemySpawner;
     public Volume postProcessingVolume;
 
-    private Dictionary<TextMeshProUGUI, Coroutine> runningCoroutines = new Dictionary<TextMeshProUGUI, Coroutine>();
+    private readonly Dictionary<TextMeshProUGUI, Coroutine> runningCoroutines = new Dictionary<TextMeshProUGUI, Coroutine>();
 
-    void Awake()
+    private void Awake()
     {
         highScore = PlayerPrefs.GetInt("HighScore", 0);
     }
 
-    void Start()
+    private void Start()
     {
         maxCombo = PlayerPrefs.GetInt("MaxCombo", 2);
         UpdateScoreUI();
         UpdateComboUI();
 
         if (inGameRoundScoreText != null)
-        {
             inGameRoundScoreText.transform.localScale = Vector3.one * 2;
-        }
 
         LoadGraphicsSettings();
     }
@@ -50,19 +48,14 @@ public class GameManager : MonoBehaviour
     private void LoadGraphicsSettings()
     {
         int graphicsQuality = PlayerPrefs.GetInt("GraphicsQuality", 1);
-
         if (postProcessingVolume != null)
-        {
             postProcessingVolume.enabled = graphicsQuality == 1;
-        }
     }
 
-    void UpdateScoreUI()
+    private void UpdateScoreUI()
     {
         if (totalScoreText != null)
-        {
-            totalScoreText.text = "" + totalScore;
-        }
+            totalScoreText.text = totalScore.ToString();
 
         if (roundScoreText != null)
         {
@@ -72,7 +65,7 @@ public class GameManager : MonoBehaviour
 
         if (inGameRoundScoreText != null)
         {
-            inGameRoundScoreText.text = "" + roundScore;
+            inGameRoundScoreText.text = roundScore.ToString();
             StartEnhancedImpactEffect(inGameRoundScoreText);
         }
     }
@@ -88,9 +81,7 @@ public class GameManager : MonoBehaviour
     public void IncreaseCombo()
     {
         if (comboCount < maxCombo)
-        {
             comboCount++;
-        }
         UpdateComboUI();
     }
 
@@ -111,24 +102,23 @@ public class GameManager : MonoBehaviour
 
     private void StartEnhancedImpactEffect(TextMeshProUGUI text)
     {
-        if (runningCoroutines.ContainsKey(text))
+        if (runningCoroutines.TryGetValue(text, out Coroutine coroutine))
         {
-            StopCoroutine(runningCoroutines[text]);
+            StopCoroutine(coroutine);
             runningCoroutines.Remove(text);
             text.transform.localScale = Vector3.one;
         }
 
         Coroutine newCoroutine = StartCoroutine(EnhancedImpactEffect(text));
-        runningCoroutines.Add(text, newCoroutine);
+        runningCoroutines[text] = newCoroutine;
     }
 
     private IEnumerator EnhancedImpactEffect(TextMeshProUGUI text)
     {
         Vector3 originalScale = text.transform.localScale;
         Vector3 enlargedScale = originalScale * 1.4f;
-
-        float elapsedTime = 0f;
         float duration = 0.05f;
+        float elapsedTime = 0f;
 
         while (elapsedTime < duration)
         {
@@ -136,35 +126,26 @@ public class GameManager : MonoBehaviour
             elapsedTime += Time.unscaledDeltaTime;
             yield return null;
         }
-
         text.transform.localScale = enlargedScale;
 
         elapsedTime = 0f;
         Vector3 slightlyReducedScale = originalScale * 1.2f;
-        duration = 0.05f;
-
         while (elapsedTime < duration)
         {
             text.transform.localScale = Vector3.Lerp(enlargedScale, slightlyReducedScale, elapsedTime / duration);
             elapsedTime += Time.unscaledDeltaTime;
             yield return null;
         }
-
         text.transform.localScale = slightlyReducedScale;
 
-        //powrot do oryginalnje skali
         elapsedTime = 0f;
-        duration = 0.05f;
-
         while (elapsedTime < duration)
         {
             text.transform.localScale = Vector3.Lerp(slightlyReducedScale, originalScale, elapsedTime / duration);
             elapsedTime += Time.unscaledDeltaTime;
             yield return null;
         }
-
         text.transform.localScale = originalScale;
-
         runningCoroutines.Remove(text);
     }
 
@@ -178,14 +159,10 @@ public class GameManager : MonoBehaviour
         gameOverCanvas.SetActive(true);
 
         if (killCountText != null)
-        {
-            killCountText.text = "" + killCount;
-        }
-        //zatrzymanie spawnowania wrogow
+            killCountText.text = killCount.ToString();
+
         if (enemySpawner != null)
-        {
             enemySpawner.enabled = false;
-        }
 
         Time.timeScale = 0.25f;
     }
@@ -200,9 +177,7 @@ public class GameManager : MonoBehaviour
         }
 
         if (highScoreText != null)
-        {
-            highScoreText.text = "" + highScore;
-        }
+            highScoreText.text = highScore.ToString();
     }
 
     public void PlayAgain()
@@ -211,7 +186,7 @@ public class GameManager : MonoBehaviour
         killCount = 0;
         comboCount = 1;
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
     public void GoBackToMainMenu()
@@ -220,6 +195,6 @@ public class GameManager : MonoBehaviour
         killCount = 0;
         comboCount = 1;
         Time.timeScale = 1f;
-        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex - 1);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
     }
 }
