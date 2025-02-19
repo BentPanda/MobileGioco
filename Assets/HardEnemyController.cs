@@ -5,7 +5,7 @@ public class HardEnemyController : MonoBehaviour
     public float speed = 0.8f;
     private Transform player;
     public int damage = 1;
-    public int pointsValue = 300;
+    public int pointsValue = 100;
     public int health = 2;
 
     public GameObject explosionEffectPrefab;

@@ -30,8 +30,8 @@ public class ShopManager : MonoBehaviour
 
     private int comboUpgradeLevel;
     private int healthUpgradeLevel;
-    private int maxComboUpgrades = 4;
-    private int maxHealthUpgrades = 4;
+    private int maxComboUpgrades = 8;
+    private int maxHealthUpgrades = 8;
     private int totalScore;
     private int upgradeCost = 1000;
 

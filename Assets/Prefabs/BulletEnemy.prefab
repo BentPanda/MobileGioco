@@ -103,7 +103,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 2
   damage: 1
-  pointsValue: 100
+  pointsValue: 10
   health: 1
   explosionEffectPrefab: {fileID: 6268574397912040960, guid: d396886592f98e04bb26e2e10ce202c0, type: 3}
   deathSound: {fileID: 0}

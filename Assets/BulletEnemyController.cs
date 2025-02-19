@@ -5,7 +5,7 @@ public class BulletEnemyController : MonoBehaviour
     public float speed = 2f;
     private Transform player;
     public int damage = 1;
-    public int pointsValue = 100;
+    public int pointsValue = 10;
     public int health = 1;
 
     public GameObject explosionEffectPrefab;

@@ -182,7 +182,7 @@ MonoBehaviour:
   speed: 1.4
   explosionEffectPrefab: {fileID: 452866945372983671, guid: 9fba67bfb7c28204c91e36f2b390c130, type: 3}
   damage: 1
-  pointsValue: 100
+  pointsValue: 25
   health: 1
   deathSound: {fileID: 8300000, guid: 2876e7fa4419a4a7096b8bb38641daa3, type: 3}
   deathSoundVolume: 2

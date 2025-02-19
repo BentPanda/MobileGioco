@@ -6,7 +6,7 @@ public class EnemyController : MonoBehaviour
     public GameObject explosionEffectPrefab;
     private Transform player;
     public int damage = 1;
-    public int pointsValue = 100;
+    public int pointsValue = 25;
     public int health = 1;
 
     public AudioClip deathSound;
